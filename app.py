@@ -29,17 +29,26 @@ def cover_image(filename):
 
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.json
+    if not request.is_json:
+        return jsonify({'status': 'error', 'message': 'Missing JSON body'}), 400
+    data = request.get_json()
     name = data.get('name', '').strip()
     if not name:
         return jsonify({'status':'error', 'message':'Name required'}), 400
+    # Check for existing user (case-insensitive)
     user = next((u for u in users.values() if u['name'].lower() == name.lower()), None)
-    if not user:
-        user_id = str(len(users) + 1)
-        user = {'id': user_id, 'name': name}
-        users[user_id] = user
+if user:
     session['user_id'] = user['id']
     return jsonify({'status':'success', 'user': user})
+else:
+    if any(u['name'].lower() == name.lower() for u in users.values()):
+        return jsonify({'status':'error', 'message':'Username already exists'}), 400
+    user_id = str(len(users) + 1)
+    user = {'id': user_id, 'name': name}
+    users[user_id] = user
+    session['user_id'] = user['id']
+    return jsonify({'status':'success', 'user': user})
+     
 
 @app.route('/logout', methods=['POST'])
 def logout():
