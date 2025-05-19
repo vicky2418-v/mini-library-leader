@@ -88,4 +88,6 @@ def add_book():
     }
     return jsonify({'status':'success', 'book': books[book_id]})
 
-
+@app.route('/books')
+def list_books():
+    return jsonify({'books': list(books.values())})
