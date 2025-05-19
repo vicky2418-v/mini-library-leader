@@ -55,3 +55,11 @@ def logout():
     session.pop('user_id', None)
     return jsonify({'status':'success'})
 
+@app.route('/session')
+def check_session():
+    user_id = session.get('user_id')
+    if user_id and user_id in users:
+        return jsonify({'logged_in':True, 'user':users[user_id]})
+    return jsonify({'logged_in':False})
+
+
