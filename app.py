@@ -1,4 +1,5 @@
 from flask import Flask, render_template, send_from_directory ,request, jsonify, session
+from werkzeug.utils import secure_filename
 import os
 
 app = Flask(__name__)
@@ -61,5 +62,28 @@ def check_session():
     if user_id and user_id in users:
         return jsonify({'logged_in':True, 'user':users[user_id]})
     return jsonify({'logged_in':False})
+
+    
+
+@app.route('/add_book', methods=['POST'])
+def add_book():
+    if 'user_id' not in session:
+        return jsonify({'status':'error', 'message':'Login required'}), 401
+    title = request.form.get('title', '').strip()
+    author = request.form.get('author', '').strip()
+    file = request.files.get('cover')
+    if not title or not author or not file or not allowed_file(file.filename):
+        return jsonify({'status':'error', 'message':'All fields required and valid image'}), 400
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(UPLOAD_FOLDER, filename))
+    book_id = str(len(books) + 1)
+    books[book_id] = {
+        'id': book_id,
+        'title': title,
+        'author': author,
+        'cover': filename,
+        'owner': session['user_id']
+    }
+    return jsonify({'status':'success', 'book': books[book_id]})
 
 
