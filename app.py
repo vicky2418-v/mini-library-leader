@@ -90,4 +90,7 @@ def add_book():
 
 @app.route('/books')
 def list_books():
+    if 'user_id' not in session:
+        return jsonify({'status':'error', 'message':'Login required'}), 401
     return jsonify({'books': list(books.values())})
+
