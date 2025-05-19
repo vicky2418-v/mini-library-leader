@@ -91,4 +91,3 @@ def add_book():
 @app.route('/books')
 def list_books():
     return jsonify({'books': list(books.values())})
-
